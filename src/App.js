@@ -1,52 +1,35 @@
 import React, { useState } from 'react';
 
-const App = () => {
-  const [item, setItem] = useState(1);
+const useInput = (initialValue, validator) => {
+  const [value, setValue] = useState(initialValue);
+  const onChange = (event) => {
+    // console.log(event.target);
+    const {
+      target: { value },
+    } = event;
 
-  const incrementItem = () => {
-    setItem(item + 1);
+    let willUpdate = true; // true니까 항상 update 될것이다.
+    if (typeof validator === 'function') {
+      willUpdate = validator(value);
+    }
+    if (willUpdate) {
+      setValue(value);
+    }
   };
-  const decrementItem = () => {
-    setItem(item - 1);
-  };
+  return { value, onChange };
+};
+
+const App = () => {
+  // const maxLen = (value) => value.length <= 10;
+  const maxLen = (value) => !value.includes('@'); // @를 포함하고있으면 업데이트를 하지않는다.
+  const name = useInput('Mr.', maxLen);
+
   return (
     <>
-      <h1>{item}</h1>
-      <button onClick={incrementItem}>Increment</button>
-      <button onClick={decrementItem}>Decrement</button>
+      <h1>hi</h1>
+      {/* <input placeholder="Name" value={name.value} onChange={name.onChange} /> */}
+      <input placeholder="Name" {...name} />
     </>
   );
 };
-// export default App;
-
-class AppUgly extends React.Component {
-  state = {
-    item: 1,
-  };
-  render() {
-    const { item } = this.state;
-    return (
-      <>
-        <h1>{item}</h1>
-        <button onClick={this.incrementItem}>Increment</button>
-        <button onClick={this.decrementItem}>Decrement</button>
-      </>
-    );
-  }
-  incrementItem = () => {
-    this.setState((state) => {
-      return {
-        item: state.item + 1,
-      };
-    });
-  };
-  decrementItem = () => {
-    this.setState((state) => {
-      return {
-        item: state.item + 1,
-      };
-    });
-  };
-}
-
-export default AppUgly;
+export default App;
