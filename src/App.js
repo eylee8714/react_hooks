@@ -1,32 +1,32 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 
-const useHover = (onHover) => {
-  const element = useRef();
-  useEffect(() => {
-    if (typeof onHover !== 'function') {
-      return;
+const useConfirm = (message = '', onConfirm, onCancel) => {
+  if (!onConfirm || typeof onConfirm !== 'function') {
+    // onConfirm이 존재하지 않거나 function이 아닐때
+    return;
+  }
+  if (onCancel && typeof onConfirm !== 'function') {
+    // onCancel이 필수적인건 아니다.  onCancel이 존재하는데 onConfirm이 function이 아닐떄
+    return;
+  }
+  const confirmAction = () => {
+    if (window.confirm(message)) {
+      onConfirm();
+    } else {
+      onCancel();
     }
-    //컴포넌트가 mount 되었을때
-    if (element.current) {
-      element.current.addEventListener('mouseenter', onHover);
-    }
-    // componentWillUnMount 일때 (eventListener를 정리한다.)
-    // component가 mount 되지 않았을때 eventListener가 배치되지 않도록한다.
-    return () => {
-      if (element.current) {
-        element.current.removeEventListener('mouseenter', onHover);
-      }
-    };
-  }, []); // [] : componentDidMount 때 단 한번만 실행된다.
-  return element;
+  };
+  return confirmAction;
 };
 
 const App = () => {
-  const sayHello = () => console.log('say hello');
-  const title = useHover(sayHello);
+  const deleteWorld = () => console.log('delete the world'); // confirm에 확인버튼누르면 실행된다.
+  const abort = () => console.log('Aborted');
+  const confirmDelete = useConfirm('Are you sure?', deleteWorld, abort);
+
   return (
     <>
-      <h1 ref={title}>Hi</h1>
+      <button onClick={confirmDelete}>Delete the world</button>
     </>
   );
 };
