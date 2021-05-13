@@ -1,32 +1,26 @@
 import React from 'react';
 
-const useConfirm = (message = '', onConfirm, onCancel) => {
-  if (!onConfirm || typeof onConfirm !== 'function') {
-    // onConfirm이 존재하지 않거나 function이 아닐때
-    return;
-  }
-  if (onCancel && typeof onConfirm !== 'function') {
-    // onCancel이 필수적인건 아니다.  onCancel이 존재하는데 onConfirm이 function이 아닐떄
-    return;
-  }
-  const confirmAction = () => {
-    if (window.confirm(message)) {
-      onConfirm();
-    } else {
-      onCancel();
-    }
+const usePreventLeave = (onLeaving) => {
+  const listener = (event) => {
+    event.preventDefault();
+    event.returnValue = ''; //이벤트에 대한 기본 작업이 금지되었는지 여부를 나타낸다
+    // returnValue는 deprecated 되었지만, 크롬에서 이걸 넣지 않으면 실행되지 않는다.
   };
-  return confirmAction;
+  const enablePrevent = () => {
+    window.addEventListener('beforeunload', listener); // beforeunload는 window가 닫히기 전에 function이 실행되는것을 허락한다.
+  };
+  const disablePrevent = () => {
+    window.removeEventListener('beforeunload', listener);
+  };
+  return { enablePrevent, disablePrevent };
 };
 
 const App = () => {
-  const deleteWorld = () => console.log('delete the world'); // confirm에 확인버튼누르면 실행된다.
-  const abort = () => console.log('Aborted');
-  const confirmDelete = useConfirm('Are you sure?', deleteWorld, abort);
-
+  const { enablePrevent, disablePrevent } = usePreventLeave();
   return (
     <>
-      <button onClick={confirmDelete}>Delete the world</button>
+      <button onClick={enablePrevent}>Protect</button>
+      <button onClick={disablePrevent}>UnProtect</button>
     </>
   );
 };
