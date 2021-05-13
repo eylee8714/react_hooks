@@ -1,35 +1,35 @@
 import React, { useState } from 'react';
 
-const useInput = (initialValue, validator) => {
-  const [value, setValue] = useState(initialValue);
-  const onChange = (event) => {
-    // console.log(event.target);
-    const {
-      target: { value },
-    } = event;
-
-    let willUpdate = true; // true니까 항상 update 될것이다.
-    if (typeof validator === 'function') {
-      willUpdate = validator(value);
-    }
-    if (willUpdate) {
-      setValue(value);
-    }
-  };
-  return { value, onChange };
+const useTabs = (initialTab, allTabs) => {
+  const [currentIndex, setCurrentIndex] = useState(initialTab);
+  if (!allTabs || !Array.isArray(allTabs)) {
+    // allTabs 가 아닐때, 배열이 아닐때 return 한다 : 빠져나온다.
+    return;
+  }
+  return { currentItem: allTabs[currentIndex], changeItem: setCurrentIndex };
 };
 
-const App = () => {
-  // const maxLen = (value) => value.length <= 10;
-  const maxLen = (value) => !value.includes('@'); // @를 포함하고있으면 업데이트를 하지않는다.
-  const name = useInput('Mr.', maxLen);
+const content = [
+  {
+    tab: 'Section 1',
+    content: "I'm the content of the Section 1",
+  },
+  {
+    tab: 'Section 2',
+    content: "I'm the content of the Section 2",
+  },
+];
 
+const App = () => {
+  const { currentItem, changeItem } = useTabs(0, content); // useTabs(0) 이면 content(0) 를 얻는다.
   return (
     <>
-      <h1>hi</h1>
-      {/* <input placeholder="Name" value={name.value} onChange={name.onChange} /> */}
-      <input placeholder="Name" {...name} />
+      {content.map((section, index) => (
+        <button onClick={() => changeItem(index)}>{section.tab}</button>
+      ))}
+      <div>{currentItem.content}</div>
     </>
   );
 };
+
 export default App;
