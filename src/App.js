@@ -1,23 +1,60 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-const useScroll = () => {
-  const [state, setState] = useState({ x: 0, y: 0 });
-  const onScroll = () => {
-    // console.log('y', window.scrollY, 'x', window.scrollX);
-    setState({ y: window.scrollY, x: window.scrollX });
+const useFullscreen = (callback) => {
+  const element = useRef();
+  const runCb = (isFull) => {
+    if (callback && typeof callback === 'function') {
+      callback(isFull);
+    }
   };
-  useEffect(() => {
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll); // event 를 추가했으면 같은 이름으로 지워줘야한다.
-  }, []);
-  return state;
+
+  //브라우저 별로 대응하기
+  const triggerFull = () => {
+    if (element.current) {
+      if (element.current.requestFullscreen) {
+        element.current.requestFullscreen();
+      } else if (element.current.mozRequestFullScreen) {
+        element.current.mozRequestFullScreen(); // firefox
+      } else if (element.current.webkitRequestFullscreen) {
+        element.current.webkitRequestFullscreen(); // opera
+      } else if (element.current.msRequestFullscreen) {
+        element.current.msRequestFullscreen(); // microsoft
+      }
+      runCb(true);
+    }
+  };
+
+  //브라우저 별로 대응하기
+  const exitFull = () => {
+    // document.exitFullscreen(); // 빠져나올떈 document 쓴다.
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.mozCancelFullscreen) {
+      document.mozCancelFullscreen(); // firefox
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen(); // opera
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen(); // microsoft
+    }
+    runCb(false);
+  };
+
+  return { element, triggerFull, exitFull };
 };
 
 const App = () => {
-  const { y } = useScroll();
+  const onFullS = (isFull) => {
+    // 콜백에 넣어주기
+    console.log(isFull ? 'We are full' : 'We are small');
+  };
+  const { element, triggerFull, exitFull } = useFullscreen(onFullS);
   return (
     <div style={{ height: '1000vh' }}>
-      <h1 style={{ position: 'fixed', color: y > 100 ? 'red' : 'blue' }}>Hi</h1>
+      <div ref={element}>
+        <img src="https://ww.namu.la/s/08c6a259933bf0159253cd7304180960a776791dcba49dba89d0e28648c20e544d87779113bcd874491d22a67d2cd4b9aab39683c3d27f90929872ef5b5ea104408096b35e7ff4e79d99a53d18b9a15df95c123177ccf7dc7d0016a7f965d600" />
+        <button onClick={exitFull}>Exit fullscreen</button>
+      </div>
+      <button onClick={triggerFull}>Make fullscreen</button>
     </div>
   );
 };
