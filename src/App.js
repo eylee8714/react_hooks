@@ -1,28 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
-const useBeforeLeave = (onBefore) => {
-  const handle = (event) => {
-    // console.log(event);
-    const { clientY } = event;
-    if (clientY <= 0) {
-      // 마우스가 위로 벗어날때만 onBefore 실행하기
-      onBefore();
-    }
-  };
+const useFadeIn = (duration = 1, delay = 0) => {
+  const element = useRef();
   useEffect(() => {
-    if (typeof onBefore !== 'function') {
+    if (typeof duration !== 'number' || typeof delay !== 'number') {
       return;
     }
-    document.addEventListener('mouseleave', handle);
-    return () => document.removeEventListener('mouseleave', handle);
-  }, []);
+    if (element.current) {
+      const { current } = element;
+      current.style.transition = `opacity ${duration}s ease-in-out ${delay}s`;
+      current.style.opacity = 1;
+    }
+  });
+  return { ref: element, style: { opacity: 0 } };
 };
+
 const App = () => {
-  const beForeLife = () => console.log('pls dont leave');
-  useBeforeLeave(beForeLife);
+  const fadeInH1 = useFadeIn(3, 2);
+  const fadeInP = useFadeIn(5, 10);
   return (
     <>
-      <h1>hello</h1>
+      <h1 {...fadeInH1}>Hello</h1>
+      <p {...fadeInP}> lorem ipsum lalalala</p>
     </>
   );
 };
